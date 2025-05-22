@@ -10,6 +10,8 @@
 </head>
 <body>
 <h2>Listing Product</h2>
+<br/>
+<a href="addProduct.jsp">Add a new Product</a>
 <%
     ResultSet rs = (ResultSet) request.getAttribute("product");
 %>

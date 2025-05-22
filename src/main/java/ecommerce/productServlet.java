@@ -3,6 +3,7 @@ package ecommerce;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -27,6 +28,15 @@ public class productServlet extends HttpServlet {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			Connection con = DriverManager.getConnection(URL, NAME, PASS);
 			
+			if(my_action.equals("delete")) {
+				int id = Integer.parseInt("id");
+				PreparedStatement ps = con.prepareStatement("delete from product where std_id = ?");
+				ps.setInt(1, id);
+				ps.executeUpdate();
+				ps.close();
+				resp.sendRedirect("ProductServlet");
+				con.close();
+			}
 			
 			//for listing 
 			Statement stat = con.createStatement();
@@ -40,5 +50,38 @@ public class productServlet extends HttpServlet {
 		} catch (Exception e) {
 			throw new ServletException(e);
 		}
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String product_id = req.getParameter("product_id");
+		 String name = req.getParameter("name");
+		    String description = req.getParameter("description");
+		    String priceStr = req.getParameter("price");
+		    String quantityStr= req.getParameter("quantity");
+		    double price = Double.parseDouble(priceStr);
+		    int quantity = Integer.parseInt(quantityStr);
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			Connection con = DriverManager.getConnection(URL, NAME, PASS);
+			
+			if(product_id == null || product_id.isEmpty()) {
+				PreparedStatement ps = con.prepareStatement("INSERT INTO product (name, description, price, quantity) VALUES (?, ? , ? , ?)");
+				ps.setString(1, name);                         // Product name
+				ps.setString(2, description);                  // Product description
+				ps.setDouble(3, price);                        // Product price
+				ps.setInt(4, quantity);                        // Product quantity
+				ps.setInt(5, Integer.parseInt(product_id));    // Product ID (for WHERE clause)
+				ps.executeUpdate();
+				ps.close();
+			
+			}
+			con.close();
+			resp.sendRedirect("ProductServlet");
+			
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+		
 	}
 }
