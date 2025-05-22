@@ -52,36 +52,53 @@ public class productServlet extends HttpServlet {
 		}
 	}
 	
-	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String product_id = req.getParameter("product_id");
-		 String name = req.getParameter("name");
-		    String description = req.getParameter("description");
-		    String priceStr = req.getParameter("price");
-		    String quantityStr= req.getParameter("quantity");
-		    double price = Double.parseDouble(priceStr);
-		    int quantity = Integer.parseInt(quantityStr);
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			Connection con = DriverManager.getConnection(URL, NAME, PASS);
-			
-			if(product_id == null || product_id.isEmpty()) {
-				PreparedStatement ps = con.prepareStatement("INSERT INTO product (name, description, price, quantity) VALUES (?, ? , ? , ?)");
-				ps.setString(1, name);                         // Product name
-				ps.setString(2, description);                  // Product description
-				ps.setDouble(3, price);                        // Product price
-				ps.setInt(4, quantity);                        // Product quantity
-				ps.setInt(5, Integer.parseInt(product_id));    // Product ID (for WHERE clause)
-				ps.executeUpdate();
-				ps.close();
-			
-			}
-			con.close();
-			resp.sendRedirect("ProductServlet");
-			
-		} catch (Exception e) {
-			throw new ServletException(e);
-		}
-		
+	    String product_id = req.getParameter("product_id");
+	    String name = req.getParameter("name");
+	    String description = req.getParameter("description");
+	    String priceStr = req.getParameter("price");
+	    String quantityStr = req.getParameter("quantity");
+
+	    try {
+	        // Validate numeric fields first
+	        double price = Double.parseDouble(priceStr);
+	        int quantity = Integer.parseInt(quantityStr);
+
+	        Class.forName("com.mysql.cj.jdbc.Driver");
+	        Connection con = DriverManager.getConnection(URL, NAME, PASS);
+
+	        if(product_id == null || product_id.isEmpty()) {
+	            // INSERT (4 parameters)
+	            PreparedStatement ps = con.prepareStatement(
+	                "INSERT INTO product (name, description, price, quantity) VALUES (?, ?, ?, ?)");
+	            ps.setString(1, name);
+	            ps.setString(2, description);
+	            ps.setDouble(3, price);
+	            ps.setInt(4, quantity);
+	            ps.executeUpdate();
+	            ps.close();
+	        } else {
+	            // UPDATE (5 parameters)
+	            int id = Integer.parseInt(product_id);
+	            PreparedStatement ps = con.prepareStatement(
+	                "UPDATE product SET name=?, description=?, price=?, quantity=? WHERE product_id=?");
+	            ps.setString(1, name);
+	            ps.setString(2, description);
+	            ps.setDouble(3, price);
+	            ps.setInt(4, quantity);
+	            ps.setInt(5, id);
+	            ps.executeUpdate();
+	            ps.close();
+	        }
+	        
+	        con.close();
+	        resp.sendRedirect("ProductServlet");
+	        
+	    } catch(NumberFormatException e) {
+	        // Handle invalid number format
+	        resp.sendRedirect("error.jsp?message=Invalid number format");
+	    } catch(Exception e) {
+	        throw new ServletException(e);
+	    }
 	}
 }
