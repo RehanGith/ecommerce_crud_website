@@ -34,8 +34,29 @@ public class productServlet extends HttpServlet {
 				ps.setInt(1, id);
 				ps.executeUpdate();
 				ps.close();
-				resp.sendRedirect("ProductServlet");
 				con.close();
+				resp.sendRedirect("ProductServlet");
+			
+			} else if(my_action.equals("edit")) {
+				int id = Integer.parseInt(req.getParameter("id")); 
+				PreparedStatement ps = con.prepareStatement("SELECT * FROM product WHERE product_id = ?");
+				ps.setInt(1, id);
+				ResultSet rs = ps.executeQuery();
+
+				if (rs.next()) {
+				    req.setAttribute("product_id", rs.getInt("product_id"));
+				    req.setAttribute("name", rs.getString("name"));
+				    req.setAttribute("description", rs.getString("description"));
+				    req.setAttribute("price", rs.getDouble("price"));
+				    req.setAttribute("quantity", rs.getInt("quantity"));
+				}
+				ps.close();
+				rs.close();
+				con.close();
+
+				req.getRequestDispatcher("editProduct.jsp").forward(req, resp);
+				return;
+
 			}
 			
 			//for listing 
@@ -78,7 +99,7 @@ public class productServlet extends HttpServlet {
 	            ps.executeUpdate();
 	            ps.close();
 	        } else {
-	            // UPDATE (5 parameters)
+	           
 	            int id = Integer.parseInt(product_id);
 	            PreparedStatement ps = con.prepareStatement(
 	                "UPDATE product SET name=?, description=?, price=?, quantity=? WHERE product_id=?");
@@ -94,9 +115,6 @@ public class productServlet extends HttpServlet {
 	        con.close();
 	        resp.sendRedirect("ProductServlet");
 	        
-	    } catch(NumberFormatException e) {
-	        // Handle invalid number format
-	        resp.sendRedirect("error.jsp?message=Invalid number format");
 	    } catch(Exception e) {
 	        throw new ServletException(e);
 	    }
