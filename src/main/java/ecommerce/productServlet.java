@@ -29,13 +29,13 @@ public class productServlet extends HttpServlet {
 			Connection con = DriverManager.getConnection(URL, NAME, PASS);
 			
 			if(my_action.equals("delete")) {
-				int id = Integer.parseInt("id");
-				PreparedStatement ps = con.prepareStatement("delete from product where std_id = ?");
+				int id = Integer.parseInt(req.getParameter("id"));
+				PreparedStatement ps = con.prepareStatement("delete from product where product_id = ?");
 				ps.setInt(1, id);
 				ps.executeUpdate();
 				ps.close();
-				con.close();
 				resp.sendRedirect("ProductServlet");
+				con.close();
 			
 			} else if(my_action.equals("edit")) {
 				int id = Integer.parseInt(req.getParameter("id")); 
@@ -57,16 +57,17 @@ public class productServlet extends HttpServlet {
 				req.getRequestDispatcher("editProduct.jsp").forward(req, resp);
 				return;
 
-			}
+			} else {
 			
-			//for listing 
-			Statement stat = con.createStatement();
-			ResultSet rs = stat.executeQuery("select * from product");
-			req.setAttribute("product", rs);
-			req.getRequestDispatcher("productListing.jsp").forward(req, resp);
-			rs.close();
-			stat.close();
-			con.close();
+				//for listing 
+				Statement stat = con.createStatement();
+				ResultSet rs = stat.executeQuery("select * from product");
+				req.setAttribute("product", rs);
+				req.getRequestDispatcher("productListing.jsp").forward(req, resp);
+				rs.close();
+				stat.close();
+				con.close();
+			}
 		
 		} catch (Exception e) {
 			throw new ServletException(e);
@@ -81,7 +82,7 @@ public class productServlet extends HttpServlet {
 	    String quantityStr = req.getParameter("quantity");
 
 	    try {
-	        // Validate numeric fields first
+	        
 	        double price = Double.parseDouble(priceStr);
 	        int quantity = Integer.parseInt(quantityStr);
 
@@ -89,7 +90,7 @@ public class productServlet extends HttpServlet {
 	        Connection con = DriverManager.getConnection(URL, NAME, PASS);
 
 	        if(product_id == null || product_id.isEmpty()) {
-	            // INSERT (4 parameters)
+	        
 	            PreparedStatement ps = con.prepareStatement(
 	                "INSERT INTO product (name, description, price, quantity) VALUES (?, ?, ?, ?)");
 	            ps.setString(1, name);
